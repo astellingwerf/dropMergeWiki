@@ -7,7 +7,7 @@ apply plugin: com.opentext.dropmerge.DropMergeWikiPlugin
 
 dropMerge {
     team {
-        name 'Platform core'
+        name 'Platform core team'
         scrumMaster 'gjansen'
         architect 'wjgerrit', 'broos'
         productManager 'jpluimer'
@@ -23,27 +23,89 @@ dropMerge {
         buildmasterHYD { url 'http://buildmaster-hyd.vanenburg.com/jenkins' }
         jenkinsOfSVT { url 'http://srv-ind-svt9l.vanenburg.com:8080' }
         jenkinsOfCMT { url 'http://cmt-jenkins.vanenburg.com/jenkins' }
+        globalUIUnits { url 'http://10.192.69.9:8080' }
     }
     jenkinsJobs {
-        trunkWipLinux {
+        def uiUnitComponents = ['artifactaudit', 'adminui', 'ldapconn', 'webgateway']
+
+        // Wip jobs
+        wipLinux {
             jobName 'pct-trunk-wip-build-installer-l-x64'
             server jenkinsServers.buildmasterNL
             description 'Linux'
         }
-        trunkWipLinuxJava8 {
+        wipLinuxJava8 {
             jobName 'pct-trunk-wip-build-installer-l-j8'
             server jenkinsServers.buildmasterNL
             description 'Linux - Java 8'
         }
-        trunkWipWindows {
+        wipWindows {
             jobName 'pct-trunk-wip-build-installer-w-x64'
             server jenkinsServers.buildmasterNL
             description 'Windows'
         }
+        wipFrtLinux {
+            jobName 'pct-trunk-wip-frt-l-x64'
+            server jenkinsServers.buildmasterNL
+            description 'Windows'
+        }
+        wipFrtLinuxJava8 {
+            jobName 'pct-trunk-wip-frt-l-j8'
+            server jenkinsServers.buildmasterNL
+            description 'Windows'
+        }
+        wipFrtWindows {
+            jobName 'pct-trunk-wip-frt-w-x64'
+            server jenkinsServers.buildmasterNL
+            description 'Windows'
+        }
+        uiUnitComponents.each { component ->
+            "wip-uiunit-$component" {
+                jobName 'pct-trunk-wip-uiunit'
+                server jenkinsServers.buildmasterNL
+                description component.replace('artifact', '')
+                matrixValues component: component
+            }
+        }
+
+        // Trunk/global jobs
         trunkLinux {
-            jobName 'Trunk-Lin64-Java7'
-            server jenkinsServers.jenkinsOfCMT
+            jobName 'pct-trunk-build-installer-l-x64'
+            server jenkinsServers.buildmasterNL
             description 'Linux'
+        }
+        trunkFrtLinux {
+            jobName 'PlatformCore-L'
+            server jenkinsServers.buildmasterNL
+            description 'Linux'
+        }
+        trunkFrtWindows {
+            jobName 'PlatformCore-W'
+            server jenkinsServers.buildmasterNL
+            description 'Windows'
+        }
+        uiUnitComponents.each { component ->
+            "trunk-uiunit-$component" {
+                jobName "${component.replace('artifact', '')}-trunk"
+                server jenkinsServers.globalUIUnits
+                description component.replace('artifact', '')
+                matrixValues component: component
+            }
+        }
+    }
+
+    regressionTests {
+        BVT {
+            compare jenkinsJobs.wipLinux, jenkinsJobs.trunkLinux
+            others jenkinsJobs.wipLinuxJava8, jenkinsJobs.wipWindows
+        }
+        FRT {
+            compare jenkinsJobs.wipFrtLinux, jenkinsJobs.trunkFrtLinux
+            compare jenkinsJobs.wipFrtWindows, jenkinsJobs.trunkFrtWindows
+        }
+        UIUnit {
+            compare jenkinsJobs.findAll { it.name.startsWith('wip-uiunit-') },
+                    jenkinsJobs.findAll { it.name.startsWith('trunk-uiunit-') }
         }
     }
 }

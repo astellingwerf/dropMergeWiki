@@ -21,7 +21,7 @@ class JenkinsJob {
 
     @Override
     public String toString() {
-        return "'" + jobName + '\'' +
+        return "$name => '" + jobName + '\'' +
                 " on " + server.name +
                 ", description='" + description + '\'' +
                 (matrixAxes ? ", matrixAxes=$matrixAxes" : '');
