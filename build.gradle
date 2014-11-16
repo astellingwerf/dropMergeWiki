@@ -128,16 +128,7 @@ sourceSets {
     }
 }
 
-String buildRepos = 'http://buildrepos.vanenburg.com/'
 repositories {
-    ivy {
-        url buildRepos + 'external'
-        layout 'maven'
-    }
-    ivy {
-        url buildRepos + 'bop'
-        layout 'maven'
-    }
     mavenCentral()
 }
 
