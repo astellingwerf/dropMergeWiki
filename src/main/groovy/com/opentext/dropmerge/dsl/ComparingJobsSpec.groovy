@@ -13,8 +13,8 @@ import java.util.regex.Pattern
  * withJob { job 'pct-frt-aix' on buildMasterNL; description 'All PCT FRT tests on AIX' }
  * </pre></p>
  *
- * <p>Not all items in the list are necesarrily comparable. In the example above, the AIX job will not be compared to
- * any other job. One can specify multiple jobs in a 'withJob' succesively.
+ * <p>Not all items in the list are necessarily comparable. In the example above, the AIX job will not be compared to
+ * any other job. One can specify multiple jobs in a 'withJob' successively.
  * None of those are considered comparable. Only when specifying a job with 'comparedToJob', this job will be considered
  * comparable to the previous job(s). To unite several jobs for comparison, the 'andJob' method can be used:</p>
  *
