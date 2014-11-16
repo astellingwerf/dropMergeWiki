@@ -2,8 +2,51 @@ apply plugin: 'base'
 apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
+apply plugin: com.opentext.dropmerge.DropMergeWikiPlugin
 
-defaultTasks 'publishReport'
+
+dropMerge {
+    team {
+        name 'Platform core'
+        scrumMaster 'gjansen'
+        architect 'wjgerrit', 'broos'
+        productManager 'jpluimer'
+        otherMembers 'astellingwerf', 'dkwakkel', 'jrosman', 'rdouden', 'wvplagge'
+    }
+
+    wiki {
+        userName 'astellin'
+    }
+
+    jenkinsServers {
+        buildmasterNL { url 'http://buildmaster-nl.vanenburg.com/jenkins' }
+        buildmasterHYD { url 'http://buildmaster-hyd.vanenburg.com/jenkins' }
+        jenkinsOfSVT { url 'http://srv-ind-svt9l.vanenburg.com:8080' }
+        jenkinsOfCMT { url 'http://cmt-jenkins.vanenburg.com/jenkins' }
+    }
+    jenkinsJobs {
+        trunkWipLinux {
+            jobName 'pct-trunk-wip-build-installer-l-x64'
+            server jenkinsServers.buildmasterNL
+            description 'Linux'
+        }
+        trunkWipLinuxJava8 {
+            jobName 'pct-trunk-wip-build-installer-l-j8'
+            server jenkinsServers.buildmasterNL
+            description 'Linux - Java 8'
+        }
+        trunkWipWindows {
+            jobName 'pct-trunk-wip-build-installer-w-x64'
+            server jenkinsServers.buildmasterNL
+            description 'Windows'
+        }
+        trunkLinux {
+            jobName 'Trunk-Lin64-Java7'
+            server jenkinsServers.jenkinsOfCMT
+            description 'Linux'
+        }
+    }
+}
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -49,17 +92,5 @@ dependencies {
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.0'
-}
-
-task publishReport(dependsOn: build, type: JavaExec) {
-    main = 'updateWiki'
-    classpath = sourceSets.main.runtimeClasspath
-    defaultCharacterEncoding 'UTF-8'
-}
-
-task compareSVTTestsToWIP(dependsOn: build, type: JavaExec) {
-    main = 'SVTTestJobComparison'
-    classpath = sourceSets.main.runtimeClasspath
-    defaultCharacterEncoding 'UTF-8'
 }
 
