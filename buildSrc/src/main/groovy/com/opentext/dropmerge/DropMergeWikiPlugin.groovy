@@ -12,6 +12,9 @@ class DropMergeWikiPlugin implements Plugin<Project>{
     }
 
     void applyTasks(project) {
+        project.task('printConfiguration') << {
+            println project.convention.plugins.dropMerge
+        }
     }
 
     void applyConventions(project) {
