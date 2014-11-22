@@ -1,6 +1,7 @@
 package com.opentext.dropmerge
 
 import com.opentext.dropmerge.dsl.*
+import com.opentext.dropmerge.tasks.*
 import org.gradle.api.*;
 
 class DropMergeWikiPlugin implements Plugin<Project>{
@@ -12,9 +13,7 @@ class DropMergeWikiPlugin implements Plugin<Project>{
     }
 
     void applyTasks(project) {
-        project.task('printConfiguration') << {
-            println project.convention.plugins.dropMerge
-        }
+        project.task('printConfiguration', type: PrintConfiguration)
     }
 
     void applyConventions(project) {
