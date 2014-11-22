@@ -99,12 +99,11 @@ dropMerge {
             server jenkinsServers.buildmasterNL
             description 'Windows'
         }
-        uiUnitComponents.each { component ->
+        uiUnitComponents.collect { it.replace('artifact', '') }.each { component ->
             "trunk-uiunit-$component" {
-                jobName "${component.replace('artifact', '')}-trunk"
+                jobName "$component-trunk"
                 server jenkinsServers.globalUIUnits
-                description component.replace('artifact', '')
-                matrixValues component: component
+                description component
             }
         }
     }
