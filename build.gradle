@@ -25,9 +25,11 @@ dropMerge {
         jenkinsOfCMT { url 'http://cmt-jenkins.vanenburg.com/jenkins' }
         globalUIUnits { url 'http://10.192.69.9:8080' }
     }
-    jenkinsJobs {
-        def uiUnitComponents = ['artifactaudit', 'adminui', 'ldapconn', 'webgateway']
 
+    def uiUnitComponents = ['artifactaudit', 'adminui', 'ldapconn', 'webgateway']
+    def uiUnitWipJobs = [:]
+    def uiUnitTrunkJobs = [:]
+    jenkinsJobs {
         // Wip jobs
         wipLinux {
             jobName 'pct-trunk-wip-build-installer-l-x64'
@@ -59,13 +61,14 @@ dropMerge {
             server jenkinsServers.buildmasterNL
             description 'Windows'
         }
-        uiUnitComponents.each { component ->
+        uiUnitWipJobs = uiUnitComponents.collectEntries { component ->
+            [(component):
             "wip-uiunit-$component" {
                 jobName 'pct-trunk-wip-uiunit'
                 server jenkinsServers.buildmasterNL
                 description component.replace('artifact', '')
                 matrixValues component: component
-            }
+            }]
         }
         upgradeWindows {
             jobName 'pct-upgrade-trigger-w'
@@ -99,12 +102,14 @@ dropMerge {
             server jenkinsServers.jenkinsOfSVT
             description 'Windows'
         }
-        uiUnitComponents.collect { it.replace('artifact', '') }.each { component ->
+        uiUnitTrunkJobs = uiUnitComponents.collectEntries { c ->
+            String component = c.replace('artifact', '')
+            [(c):
             "trunk-uiunit-$component" {
                 jobName "$component-trunk"
                 server jenkinsServers.globalUIUnits
                 description component
-            }
+            }]
         }
     }
 
@@ -118,8 +123,9 @@ dropMerge {
             compare jenkinsJobs.wipFrtWindows, jenkinsJobs.trunkFrtWindows
         }
         UIUnit {
-            compare jenkinsJobs.findAll { it.name.startsWith('wip-uiunit-') },
-                    jenkinsJobs.findAll { it.name.startsWith('trunk-uiunit-') }
+            uiUnitComponents.each { component ->
+                compare uiUnitWipJobs[component], uiUnitTrunkJobs[component]
+            }
         }
     }
     pmd {
