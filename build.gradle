@@ -91,12 +91,12 @@ dropMerge {
         }
         trunkFrtLinux {
             jobName 'PlatformCore-L'
-            server jenkinsServers.buildmasterNL
+            server jenkinsServers.jenkinsOfSVT
             description 'Linux'
         }
         trunkFrtWindows {
             jobName 'PlatformCore-W'
-            server jenkinsServers.buildmasterNL
+            server jenkinsServers.jenkinsOfSVT
             description 'Windows'
         }
         uiUnitComponents.collect { it.replace('artifact', '') }.each { component ->
