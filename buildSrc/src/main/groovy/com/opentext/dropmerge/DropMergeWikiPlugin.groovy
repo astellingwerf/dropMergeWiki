@@ -4,7 +4,7 @@ import com.opentext.dropmerge.dsl.*
 import com.opentext.dropmerge.tasks.*
 import org.gradle.api.*;
 
-class DropMergeWikiPlugin implements Plugin<Project>{
+class DropMergeWikiPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
@@ -14,6 +14,7 @@ class DropMergeWikiPlugin implements Plugin<Project>{
 
     void applyTasks(project) {
         project.task('printConfiguration', type: PrintConfiguration)
+        project.task('updateWiki', type: UpdateWiki)
     }
 
     void applyConventions(project) {

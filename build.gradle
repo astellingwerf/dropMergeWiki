@@ -15,7 +15,9 @@ dropMerge {
     }
 
     wiki {
-        userName 'astellin'
+        userName 'astellin@opentext.com'
+        pageId 302127204
+        updateProductionServer false
     }
 
     jenkinsServers {
