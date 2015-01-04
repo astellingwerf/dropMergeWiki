@@ -9,4 +9,5 @@ dependencies {
     compile gradleApi()
     compile localGroovy()
     compile 'org.apache.commons:commons-lang3:3.3.2'
+    compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.6'
 }
