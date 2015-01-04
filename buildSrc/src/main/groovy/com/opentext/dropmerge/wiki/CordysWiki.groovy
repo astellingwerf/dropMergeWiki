@@ -57,24 +57,24 @@ class CordysWiki {
             result = getEditForm(reader).'**'
                     .findAll { isFormField(it) }
                     .collect { new FormField(it) }
-                    .collectEntries { [(it.name):it] }
+                    .collectEntries { [(it.name): it] }
         }
         return result
     }
 
     public void updateDropMergePage(String pageID, FieldDataTransformer transformers, boolean postToRealServer) {
         def updateQuery = [
-                pageId: pageID,
-                entityId: pageID,
-                mode: 'edit',
+                pageId         : pageID,
+                entityId       : pageID,
+                mode           : 'edit',
                 originalContent: '',
-                wysiwygContent: '',
-                decorator: 'none',
-                formMode: 'forms',
-                contentType: 'page',
-                formName: 'scaffold-form',
-                versionComment: 'Automatically updated by script.',
-                notifyWatchers: 'false']
+                wysiwygContent : '',
+                decorator      : 'none',
+                formMode       : 'forms',
+                contentType    : 'page',
+                formName       : 'scaffold-form',
+                versionComment : 'Automatically updated by script.',
+                notifyWatchers : 'false']
 
 
         wikiHttp.get(path: '/pages/editscaffold.action', query: [pageId: pageID]) { resp, reader ->
@@ -83,10 +83,9 @@ class CordysWiki {
             ['originalVersion', 'conflictingVersion', 'parentPageString', 'newSpaceKey'].each {
                 updateQuery[it] = getValueOfInputFieldById(form, it)
             }
-            ['title': 'content-title', 'spaceKey': 'newSpaceKey'].each { targetParam, sourceFieldName ->
+            ['content-title': 'title', 'newSpaceKey': 'spaceKey'].each { sourceFieldName, targetParam ->
                 updateQuery[targetParam] = getValueOfInputFieldById(form, sourceFieldName)
             }
-
 
             def json = new JsonBuilder()
 
