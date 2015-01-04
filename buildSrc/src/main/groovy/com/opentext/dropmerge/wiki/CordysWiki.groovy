@@ -62,7 +62,7 @@ class CordysWiki {
         return result
     }
 
-    public void updateDropMergePage(String pageID, FieldDataTransformer transformers, boolean postToRealServer) {
+    public void updateDropMergePage(String pageID, Map<String, String> data, boolean postToRealServer) {
         def updateQuery = [
                 pageId         : pageID,
                 entityId       : pageID,
@@ -95,7 +95,7 @@ class CordysWiki {
                         .collect { new FormField(it) }
                         .each { FormField formField ->
 
-                    String contentValue = transformers.transformFieldData(formField)
+                    String contentValue = data.containsKey(formField.name) ? data[formField.name] : formField.content
                     "${formField.name}" {
                         name(formField.name)
                         children {}

@@ -4,6 +4,7 @@ import com.opentext.dropmerge.dsl.DropMergeConfiguration
 import com.opentext.dropmerge.jenkins.Jenkins
 import com.opentext.dropmerge.jenkins.JenkinsJob
 import com.opentext.dropmerge.tasks.updatewiki.*
+import com.opentext.dropmerge.wiki.CordysWiki
 import org.gradle.api.DefaultTask
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskAction
@@ -119,10 +120,10 @@ class UpdateWiki extends DefaultTask {
         if (!configuration.wiki.pageId) throw new IllegalArgumentException('wiki page id not provided or empty')
 
         println resultingData
-//        def wiki = new CordysWiki()
-//        wiki.authenticate(configuration.wiki.userName, configuration.wiki.password)
-//        wiki.updateDropMergePage(configuration.wiki.pageId, new X(), configuration.wiki.updateProductionServer)
-//        dependsOn()
+        new CordysWiki().with {
+            authenticate(configuration.wiki.userName, configuration.wiki.password)
+            updateDropMergePage(configuration.wiki.pageId, resultingData, configuration.wiki.updateProductionServer)
+        }
     }
 
     public static JenkinsJob getJenkinsJob(com.opentext.dropmerge.dsl.JenkinsJob job) {
