@@ -113,6 +113,14 @@ dropMerge {
                 description component
             }]
         }
+        wipMBV {
+            jobName 'pct-trunk-wip-mb'
+            server jenkinsServers.buildmasterNL
+        }
+        trunkMBV {
+            jobName 'pct-trunk-mb'
+            server jenkinsServers.buildmasterNL
+        }
     }
 
     regressionTests {
@@ -137,6 +145,10 @@ dropMerge {
     compilerWarnings {
         wip jenkinsJobs.wipLinux
         trunk jenkinsJobs.trunkLinux
+    }
+    mbv {
+        wip jenkinsJobs.wipMBV
+        trunk jenkinsJobs.trunkMBV
     }
     upgrade jenkinsJobs.findAll { it.name.startsWith('upgrade') }
     integrationTests jenkinsJobs.eastwind
