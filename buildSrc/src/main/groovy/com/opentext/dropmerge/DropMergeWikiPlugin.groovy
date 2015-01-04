@@ -2,7 +2,7 @@ package com.opentext.dropmerge
 
 import com.opentext.dropmerge.dsl.*
 import com.opentext.dropmerge.tasks.*
-import org.gradle.api.*;
+import org.gradle.api.*
 
 class DropMergeWikiPlugin implements Plugin<Project> {
 
