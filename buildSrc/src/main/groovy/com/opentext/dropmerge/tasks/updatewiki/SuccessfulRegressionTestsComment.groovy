@@ -2,7 +2,6 @@ package com.opentext.dropmerge.tasks.updatewiki
 
 import com.opentext.dropmerge.dsl.RegressionTest
 import com.opentext.dropmerge.jenkins.JenkinsJob
-import com.opentext.dropmerge.jenkins.Util
 import com.opentext.dropmerge.wiki.WikiTableBuilder
 import groovy.time.TimeCategory
 import groovy.xml.MarkupBuilder
@@ -52,10 +51,10 @@ class SuccessfulRegressionTestsComment extends SimpleField {
                         def diff = TimeCategory.minus(new Date(), ts).days
                         if (diff > 2)
                             timestampText += ", $diff days ago"
-                        table << ['Type': tests.name,
-                                  'OS': wipDescription,
+                        table << ['Type'                         : tests.name,
+                                  'OS'                           : wipDescription,
                                   'WIP was compared to trunk job': getJenkinsUrlWithStatus(jj),
-                                  'Timestamp': timestampText
+                                  'Timestamp'                    : timestampText
                         ]
                     }
                 }

@@ -6,7 +6,7 @@ import org.gradle.api.DefaultTask
 
 public class SimpleField extends DefaultTask {
     String fieldName
-    Map<String,String> results
+    Map<String, String> results
 
     DropMergeConfiguration getConfig() {
         return project.convention.plugins.dropMerge.dropMerge
