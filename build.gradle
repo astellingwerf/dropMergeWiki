@@ -151,11 +151,11 @@ tasks.withType(JavaCompile) {
 
 sourceSets {
     main {
-        groovy { srcDirs = ['src/main/java', 'src/main/groovy'] }
-        resources { srcDir 'src/main/resources' }
+        groovy { srcDirs = ['src/main/java', 'src/main/groovy', 'buildSrc/src/main/groovy'] }
+        resources { srcDirs = ['src/main/resources', 'buildSrc/src/main/resources'] }
     }
     test {
-        groovy { srcDirs = ['src/test/groovy'] }
+        groovy { srcDirs = ['src/test/groovy', 'buildSrc/src/test/groovy'] }
         resources { srcDirs = ['src/test/resources'] }
     }
 }
@@ -165,8 +165,10 @@ repositories {
 }
 
 dependencies {
-    compile 'org.codehaus.groovy:groovy-all:2.3.+'
+    compile 'org.codehaus.groovy:groovy-all:2.3.9'
     compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.6'
+    compile 'org.apache.commons:commons-lang3:3.3.2'
+    compile gradleApi()
     testCompile 'junit:junit:4.11'
     testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
     testCompile 'cglib:cglib-nodep:2.2'
