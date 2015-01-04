@@ -25,7 +25,7 @@ dropMerge {
         buildmasterHYD { url 'http://buildmaster-hyd.vanenburg.com/jenkins' }
         jenkinsOfSVT { url 'http://srv-ind-svt9l.vanenburg.com:8080' }
         jenkinsOfCMT { url 'http://cmt-jenkins.vanenburg.com/jenkins' }
-        globalUIUnits { url 'http://10.192.69.9:8080' }
+        globalUIUnits { url 'http://cin9002.vanenburg.com:8080' }
     }
 
     def uiUnitComponents = ['artifactaudit', 'adminui', 'ldapconn', 'webgateway']
