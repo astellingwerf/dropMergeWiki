@@ -1,27 +1,16 @@
 package com.opentext.dropmerge.tasks.updatewiki
 
 import com.opentext.dropmerge.dsl.JenkinsJob
-import com.opentext.dropmerge.jenkins.WarningLevel
-import org.gradle.api.tasks.TaskAction
+import com.opentext.dropmerge.dsl.WipTrunkPair
 
-import static com.opentext.dropmerge.tasks.UpdateWiki.getJenkinsJob
-
-class PMDCount extends SimpleField {
-    WarningLevel level
-    Closure<JenkinsJob> projection
-
-    void configure(WarningLevel l, Closure p) {
-        level = l
-        projection = p
+class PMDCount extends QualityMetricCount {
+    @Override
+    protected WipTrunkPair<JenkinsJob> getMetricPair() {
+        config.pmd
     }
 
-    @TaskAction
-    public void calculateTestCount() {
-        def job = projection(config.pmd)
-        if (!job) {
-            didWork = false
-            return
-        }
-        result = getJenkinsJob(job).getPMDFigure(level)
+    @Override
+    protected String getMetricFigure(com.opentext.dropmerge.jenkins.JenkinsJob job) {
+        job.getPMDFigure(level)
     }
 }
