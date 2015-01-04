@@ -21,129 +21,12 @@ class JenkinsSpec {
         TestTypesSpec jobSpec = new TestTypesSpec()
         jobSpec.with jobsByType
 
-        inputs['SuccesfulTestsBefore'] = {
-            int total = jobSpec.comparableJobsByType.values().sum { Map<List<JobSpec>, List<JobSpec>> jobs ->
-                jobs.values().sum { List<JobSpec> js ->
-                    js.sum { JobSpec j ->
-                        j.jenkinsJob.getTestFigure(TestCount.Pass) as int
-                    }
-                }
-            }
-            return "$total"
-        }
-        inputs['FailedTestsBefore'] = {
-            int total = jobSpec.comparableJobsByType.values().sum { Map<List<JobSpec>, List<JobSpec>> jobs ->
-                jobs.values().sum { List<JobSpec> js ->
-                    js.sum { JobSpec j ->
-                        j.jenkinsJob.getTestFigure(TestCount.Fail) as int
-                    }
-                }
-            }
-            return "$total"
-        }
-        inputs['SuccesfulTestsAfter'] = {
-            int total = jobSpec.comparableJobsByType.values().sum { Map<List<JobSpec>, List<JobSpec>> jobs ->
-                jobs.keySet().sum { List<JobSpec> js ->
-                    js.sum { JobSpec j ->
-                        j.jenkinsJob.getTestFigure(TestCount.Pass) as int
-                    }
-                }
-            }
-            return "$total"
-        }
-        inputs['FailedTestsAfter'] = {
-            int total = jobSpec.comparableJobsByType.values().sum { Map<List<JobSpec>, List<JobSpec>> jobs ->
-                jobs.keySet().sum { List<JobSpec> js ->
-                    js.sum { JobSpec j ->
-                        j.jenkinsJob.getTestFigure(TestCount.Fail) as int
-                    }
-                }
-            }
-            return "$total"
-        }
-
-        use(StringClosureCategories) {
-            //TODO: This doesn't handle the com.opentext.dropmerge.dsl.ComparingJobsSpec.andJob construct
-            inputs['SuccessfulRegressionTestsComment'] = TransformerProvider.withTable { WikiTableBuilder table ->
-                table.setHeaders(['Type', 'OS', 'Successful', 'Failed', 'Skipped', 'Link'])
-
-                int passCount = 0, failCount = 0, skipCount = 0
-                jobSpec.jobsByType.each { String type, List<JobSpec> jobs ->
-                    jobs.each { JobSpec job ->
-                        passCount += job.jenkinsJob.getTestFigure(TestCount.Pass) as int
-                        failCount += job.jenkinsJob.getTestFigure(TestCount.Fail) as int
-                        skipCount += job.jenkinsJob.getTestFigure(TestCount.Skip) as int
-                        table.addRow([
-                                type,
-                                job.description,
-                                job.jenkinsJob.getTestFigure(TestCount.Pass),
-                                job.jenkinsJob.getTestFigure(TestCount.Fail),
-                                job.jenkinsJob.getTestFigure(TestCount.Skip),
-                                getJenkinsUrlWithStatus(job.jenkinsJob)
-                        ])
-                    }
-                }
-
-                table.addRow(['All', 'All', "$passCount", "$failCount", "$skipCount", ''])
-                return
-            }
-            //TODO: This doesn't handle the com.opentext.dropmerge.dsl.ComparingJobsSpec.andJob construct
-            inputs['SuccessfulRegressionTestsComment'] += TransformerProvider.withTable { WikiTableBuilder table ->
-                jobSpec.comparableJobsByType.each { String type, Map<List<JobSpec>, List<JobSpec>> comparableJobs ->
-                    comparableJobs.each { List<JobSpec> wips, List<JobSpec> trunks ->
-                        String wipOS = wips*.description.unique().join(' / ');
-                        trunks.each { JobSpec trunk ->
-                            Date ts = trunk.jenkinsJob.getBuildTimestamp(JenkinsJob.LAST_COMPLETED_BUILD)
-                            String timestampText = new SimpleDateFormat('MMM dd \'at\' HH:mm z').format(ts)
-                            def diff = TimeCategory.minus(new Date(), ts).days
-                            if(diff > 2)
-                                timestampText += ", $diff days ago"
-                            table.addRow('Type': type,
-                                    'OS': wipOS,
-                                    'WIP was compared to trunk job': getJenkinsUrlWithStatus(trunk.jenkinsJob),
-                                    'Timestamp': timestampText
-                            )
-                        }
-                    }
-                }
-
-                return
-            }
-            inputs['SuccessfulRegressionTestsComment'] += TransformerProvider.withHtml { MarkupBuilder html ->
-                html.style IconCSS.style
-            }
-        }
-
         inputs['FailedRegressionTestsComment'] = { jobSpec.extraComment.sb.toString() }
-
-        //TODO: This doesn't handle the com.opentext.dropmerge.dsl.ComparingJobsSpec.andJob construct
-        inputs['TotalRegressionTestsComment'] = TransformerProvider.withTable {
-            table ->
-                jobSpec.comparableJobsByType.each { String type, Map<List<JobSpec>, List<JobSpec>> comparableJobs ->
-                    comparableJobs.each { List<JobSpec> wip, List<JobSpec> trunk ->
-                        String wipOS = wip*.description.unique().join(' / ')
-                        Jenkins.getTestDiffsPerSuite(trunk*.jenkinsJob, wip*.jenkinsJob).each { k, v ->
-                            table.addRow(
-                                    'Suite / Test': k,
-                                    'Difference': String.format('%+d', v),
-                                    'Type': type,
-                                    'OS': wipOS,
-                                    'Justification': jobSpec.justifications[type][wip.first()]?.getJustificationsForClassName(k)
-                            )
-                        }
-                    }
-                }
-        }
     }
 
     void pmd(@DelegatesTo(ComparableJobsSpec) Closure jobs) {
         ComparableJobsSpec jobSpec = new ComparableJobsSpec()
         jobSpec.with jobs
-
-        inputs['PMDViolationsHighBefore'] = { jobSpec.trunk.getPMDFigure(WarningLevel.High) }
-        inputs['PMDViolationsMediumBefore'] = { jobSpec.trunk.getPMDFigure(WarningLevel.Normal) }
-        inputs['PMDViolationsHighAfter'] = { jobSpec.wip.getPMDFigure(WarningLevel.High) }
-        inputs['PMDViolationsMediumAfter'] = { jobSpec.wip.getPMDFigure(WarningLevel.Normal) }
 
         use(StringClosureCategories) {
             [HIGH: 'High', NORMAL: 'Medium'].each { String jenkinsTerm, String wikiFieldTerm ->
@@ -195,9 +78,6 @@ class JenkinsSpec {
         ComparableJobsSpec jobSpec = new ComparableJobsSpec()
         jobSpec.with jobs
 
-        inputs['CompilerWarningsBefore'] = { jobSpec.trunk.compilerWarningFigure }
-        inputs['CompilerWarningsAfter'] = { jobSpec.wip.compilerWarningFigure }
-
         use(StringClosureCategories) {
             inputs['CompilerWarningsComment'] = createQualityMetricComment(jobSpec, 'warnings3Result', 'Compile Warning results')
             inputs['CompilerWarningsComment'] += TransformerProvider.withTable { table ->
@@ -210,11 +90,6 @@ class JenkinsSpec {
     void mbv(@DelegatesTo(ComparableJobsSpec) Closure jobs) {
         ComparableJobsSpec jobSpec = new ComparableJobsSpec()
         jobSpec.with jobs
-
-        inputs['MBViolationsHighBefore'] = { jobSpec.trunk.getMBFigure(WarningLevel.High) }
-        inputs['MBViolationsMediumBefore'] = { jobSpec.trunk.getMBFigure(WarningLevel.Normal) }
-        inputs['MBViolationsHighAfter'] = { jobSpec.wip.getMBFigure(WarningLevel.High) }
-        inputs['MBViolationsMediumAfter'] = { jobSpec.wip.getMBFigure(WarningLevel.Normal) }
 
         use(StringClosureCategories) {
             [HIGH: 'High', NORMAL: 'Medium'].each { String jenkinsTerm, String wikiFieldTerm ->
@@ -242,61 +117,4 @@ class JenkinsSpec {
             }
         }
     }
-
-    void upgrade(@DelegatesTo(JobsSpec) Closure jobsClosure) {
-        JobsSpec jobsSpec = new JobsSpec()
-        jobsSpec.with jobsClosure;
-
-        List<JobSpec> jobs = jobsSpec.jobs
-        inputs['UpgradeTested'] = { item ->
-            CordysWiki.selectOption(item, (jobs.every { JobSpec j -> j.jenkinsJob.lastBuildResult == 'SUCCESS' } ? 'Yes' : 'No'))
-        }
-        inputs['UpgradeTestedComment'] = TransformerProvider.withHtml { html ->
-            html.p {
-                jobs.each { JobSpec j ->
-                    getJenkinsUrlWithStatus(j.jenkinsJob, JenkinsJob.LAST_COMPLETED_BUILD, 'Upgrade job').with {
-                        it.delegate = html
-                        it.call()
-                    }
-                    if (j.description) {
-                        html.mkp.yield ' ' + j.description
-                    }
-                    html.br()
-                }
-            }
-        }
-    }
-
-    void integrationTests(@DelegatesTo(JobsSpec) Closure jobsClosure) {
-        JobsSpec jobsSpec = new JobsSpec()
-        jobsSpec.with jobsClosure;
-
-        List<JobSpec> jobs = jobsSpec.jobs
-        inputs['IntegrationTestsPass'] = { item ->
-            CordysWiki.selectOption(item, (jobs.every { JobSpec j -> j.jenkinsJob.lastBuildResult == 'SUCCESS' } ? 'Yes' : 'No'))
-        }
-        inputs['IntegrationTestsPassComment'] = TransformerProvider.withHtml { html ->
-            html.p {
-                jobs.each { JobSpec j ->
-                    getJenkinsUrlWithStatus(j.jenkinsJob, JenkinsJob.LAST_COMPLETED_BUILD, 'Integration test job').with {
-                        it.delegate = html
-                        it.call()
-                    }
-                    if (j.description) {
-                        html.mkp.yield ' ' + j.description
-                    }
-                    html.br()
-                }
-            }
-        }
-    }
-
-    private Closure getJenkinsUrl(JenkinsJob job, String build = null, String linkText = null) {
-        return { a(href: job.getBuildUrl(build), linkText ?: job.toString()) }
-    }
-
-    private Closure getJenkinsUrlWithStatus(JenkinsJob job, String build = null, String linkText = null) {
-        return { span(class: "jenkinsJobStatus jenkinsJobStatus_${job.color}", getJenkinsUrl(job, build, linkText)) }
-    }
-
 }

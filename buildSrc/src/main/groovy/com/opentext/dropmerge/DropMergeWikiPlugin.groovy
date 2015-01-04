@@ -6,6 +6,8 @@ import org.gradle.api.*;
 
 class DropMergeWikiPlugin implements Plugin<Project> {
 
+    public static final String DROP_MERGE_GROUP = 'Drop merge'
+
     @Override
     void apply(Project project) {
         applyTasks(project)
@@ -13,8 +15,8 @@ class DropMergeWikiPlugin implements Plugin<Project> {
     }
 
     void applyTasks(project) {
-        project.task('printConfiguration', type: PrintConfiguration)
-        project.task('updateWiki', type: UpdateWiki)
+        project.task('printConfiguration', type: PrintConfiguration, group: DROP_MERGE_GROUP)
+        project.task('updateWiki', type: UpdateWiki, group: DROP_MERGE_GROUP)
     }
 
     void applyConventions(project) {

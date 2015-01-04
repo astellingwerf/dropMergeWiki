@@ -1,132 +1,131 @@
 package com.opentext.dropmerge.tasks
 
 import com.opentext.dropmerge.dsl.DropMergeConfiguration
-import com.opentext.dropmerge.dsl.RegressionTest
 import com.opentext.dropmerge.jenkins.Jenkins
 import com.opentext.dropmerge.jenkins.JenkinsJob
-import com.opentext.dropmerge.jenkins.TestCount
-import com.opentext.dropmerge.wiki.CordysWiki
-import com.opentext.dropmerge.wiki.FieldDataTransformer
-import com.opentext.dropmerge.wiki.WikiTableBuilder
-import groovy.time.TimeCategory
-import groovy.xml.MarkupBuilder
+import com.opentext.dropmerge.tasks.updatewiki.*
 import org.gradle.api.DefaultTask
+import org.gradle.api.Task
 import org.gradle.api.tasks.TaskAction
-import org.jenkinsci.images.IconCSS
 
-import java.text.SimpleDateFormat
+import static com.opentext.dropmerge.DropMergeWikiPlugin.DROP_MERGE_GROUP
+import static com.opentext.dropmerge.jenkins.TestCount.Fail
+import static com.opentext.dropmerge.jenkins.TestCount.Pass
+import static com.opentext.dropmerge.jenkins.WarningLevel.High
+import static com.opentext.dropmerge.jenkins.WarningLevel.Normal
 
 class UpdateWiki extends DefaultTask {
+
+    static Task updateAllTask
+    Map<String, String> resultingData = [:]
 
     DropMergeConfiguration getConfiguration() {
         return project.convention.plugins.dropMerge.dropMerge
     }
 
-    @TaskAction
-    public void updateWiki() {
-        if (!configuration.wiki.userName) throw new IllegalArgumentException("wiki username not provided or empty")
-        if (!configuration.wiki.password) throw new IllegalArgumentException("wiki password not provided or empty")
-        if (!configuration.wiki.pageId) throw new IllegalArgumentException("wiki page id not provided or empty")
+    public UpdateWiki() {
+        super()
+        if (!updateAllTask) {
+            updateAllTask = project.task('updateWiki-all').dependsOn this
+        }
 
-        def wiki = new CordysWiki()
-        wiki.authenticate(configuration.wiki.userName, configuration.wiki.password)
-        wiki.updateDropMergePage(configuration.wiki.pageId, new X(), configuration.wiki.updateProductionServer)
+        // 0
+        registerDependencyTaskForField('TeamLink') { selectedOption = config.team.name }
+
+        // 4
+        registerDependencyTaskForField('IntegrationTestsPass') {
+            selectedOption = config.integrationTests.every {
+                getJenkinsJob(it).lastBuildResult == 'SUCCESS'
+            } ? 'Yes' : 'No'
+        }
+        registerDependencyTaskForField('IntegrationTestsPassComment',
+                JenkinsJobStatusComment,
+                { set({ config.integrationTests }) })
+
+        // 5, 6, and 7
+        registerDependencyTaskForField('SuccesfulTestsBefore', ComparableTestCount, { configure Pass, { it.left } })
+        registerDependencyTaskForField('SuccesfulTestsAfter', ComparableTestCount, { configure Pass, { it.right } })
+        registerDependencyTaskForField('FailedTestsBefore', ComparableTestCount, { configure Fail, { it.left } })
+        registerDependencyTaskForField('FailedTestsAfter', ComparableTestCount, { configure Fail, { it.right } })
+        registerDependencyTaskForField('SuccessfulRegressionTestsComment', SuccessfulRegressionTestsComment)
+        registerDependencyTaskForField('TotalRegressionTestsComment', TotalRegressionTestsComment)
+
+        // 14
+        registerDependencyTaskForField('UpgradeTested') {
+            selectedOption = config.upgrade.every {
+                getJenkinsJob(it).lastBuildResult == 'SUCCESS'
+            } ? 'Yes' : 'No'
+        }
+        registerDependencyTaskForField('UpgradeTestedComment',
+                JenkinsJobStatusComment,
+                { set({ config.upgrade }) })
+
+        // 17, and 18
+        registerDependencyTaskForField('MBViolationsHighBefore', MBVCount, { configure High, { it.trunk } })
+        registerDependencyTaskForField('MBViolationsHighAfter', MBVCount, { configure High, { it.wip } })
+        registerDependencyTaskForField('MBViolationsMediumBefore', MBVCount, { configure Normal, { it.trunk } })
+        registerDependencyTaskForField('MBViolationsMediumAfter', MBVCount, { configure Normal, { it.wip } })
+
+        // 19
+        registerDependencyTaskForField('CompilerWarningsBefore') {
+            def j = config.compilerWarnings.trunk
+            if (!j) {
+                didWork = false
+                return
+            }
+            result = getJenkinsJob(j).compilerWarningFigure
+        }
+        registerDependencyTaskForField('CompilerWarningsAfter') {
+            def j = config.compilerWarnings.wip
+            if (!j) {
+                didWork = false
+                return
+            }
+            result = getJenkinsJob(j).compilerWarningFigure
+        }
+
+        // 20, and 21
+        registerDependencyTaskForField('PMDViolationsHighBefore', PMDCount, { configure High, { it.trunk } })
+        registerDependencyTaskForField('PMDViolationsHighAfter', PMDCount, { configure High, { it.wip } })
+        registerDependencyTaskForField('PMDViolationsMediumBefore', PMDCount, { configure Normal, { it.trunk } })
+        registerDependencyTaskForField('PMDViolationsMediumAfter', PMDCount, { configure Normal, { it.wip } })
     }
 
-    class X extends FieldDataTransformer {
-        public String transformTeamLink(def item) { CordysWiki.selectOption(item, configuration.team.name) }
+    private Task registerDependencyTaskForField(String field,
+                                                Class<? extends Task> type,
+                                                Closure configure = null,
+                                                Closure action = null) {
+        def t = project.task("fillDropMergeField$field",
+                group: DROP_MERGE_GROUP,
+                type: type,
+                description: "Calculate the data for the field \'$field\'.")
+                .configure({ fieldName = field; results = resultingData })
+                .configure(configure)
+        if (action)
+            t << action
+        t.finalizedBy this
+        updateAllTask.dependsOn t
+        return t
+    }
 
-        @SuppressWarnings("SpellCheckingInspection")
-        public String transformSuccesfulTestsBefore() { getComparableTestCount(TestCount.Pass) { it.left } }
+    private Task registerDependencyTaskForField(String field, Closure action) {
+        registerDependencyTaskForField(field, SimpleField, {}, action)
+    }
 
-        @SuppressWarnings("SpellCheckingInspection")
-        public String transformSuccesfulTestsAfter() { getComparableTestCount(TestCount.Pass) { it.right } }
+    @TaskAction
+    public void updateWiki() {
+        if (!configuration.wiki.userName) throw new IllegalArgumentException('wiki username not provided or empty')
+        if (!configuration.wiki.password) throw new IllegalArgumentException('wiki password not provided or empty')
+        if (!configuration.wiki.pageId) throw new IllegalArgumentException('wiki page id not provided or empty')
 
-        public String transformFailedTestsBefore() { getComparableTestCount(TestCount.Fail) { it.left } }
+        println resultingData
+//        def wiki = new CordysWiki()
+//        wiki.authenticate(configuration.wiki.userName, configuration.wiki.password)
+//        wiki.updateDropMergePage(configuration.wiki.pageId, new X(), configuration.wiki.updateProductionServer)
+//        dependsOn()
+    }
 
-        public String transformFailedTestsAfter() { getComparableTestCount(TestCount.Fail) { it.right } }
-
-        public String getComparableTestCount(TestCount testCount, Closure projection) {
-            """${
-                configuration.regressionTests.sum { RegressionTest tests ->
-                    tests.comparables.collectMany(projection).sum {
-                        getJenkinsJob(it).getTestFigure(testCount) as int
-                    }
-                }
-            }"""
-        }
-
-        public String transformSuccessfulRegressionTestsComment() {
-            WikiTableBuilder.table { WikiTableBuilder table ->
-                table.setHeaders(['Type', 'OS', 'Successful', 'Failed', 'Skipped', 'Link'])
-
-                int passCount = 0, failCount = 0, skipCount = 0
-                configuration.regressionTests.collectEntries { RegressionTest tests ->
-                    [(tests.name): tests.comparables.collectMany { it.left } + tests.others]
-                }.each { String type, Collection<com.opentext.dropmerge.dsl.JenkinsJob> jobs ->
-                    jobs.each { com.opentext.dropmerge.dsl.JenkinsJob job ->
-                        JenkinsJob jj = getJenkinsJob(job)
-                        passCount += jj.getTestFigure(TestCount.Pass) as int
-                        failCount += jj.getTestFigure(TestCount.Fail) as int
-                        skipCount += jj.getTestFigure(TestCount.Skip) as int
-                        table << [type,
-                                job.description,
-                                jj.getTestFigure(TestCount.Pass),
-                                jj.getTestFigure(TestCount.Fail),
-                                jj.getTestFigure(TestCount.Skip),
-                                getJenkinsUrlWithStatus(jj)
-                        ]
-                    }
-                }
-
-                table << ['All', 'All', "$passCount", "$failCount", "$skipCount", '']
-            } + WikiTableBuilder.table { WikiTableBuilder table ->
-
-                configuration.regressionTests.each { RegressionTest tests ->
-                    tests.comparables.each {
-                        String wipDescription = it.left*.description.unique().join(' / ')
-                        it.right.each { com.opentext.dropmerge.dsl.JenkinsJob job ->
-                            JenkinsJob jj = getJenkinsJob(job)
-                            Date ts = jj.getBuildTimestamp(JenkinsJob.LAST_COMPLETED_BUILD)
-                            String timestampText = new SimpleDateFormat('MMM dd \'at\' HH:mm z').format(ts)
-                            def diff = TimeCategory.minus(new Date(), ts).days
-                            if (diff > 2)
-                                timestampText += ", $diff days ago"
-                            table << ['Type': tests.name,
-                                    'OS': wipDescription,
-                                    'WIP was compared to trunk job': getJenkinsUrlWithStatus(jj),
-                                    'Timestamp': timestampText
-                            ]
-                        }
-                    }
-                }
-            } + WikiTableBuilder.withHtml { MarkupBuilder html ->
-                html.style IconCSS.style
-            }
-        }
-
-        public String transformIntegrationTestsPass(def item) {
-            def option = configuration.integrationTests.every { com.opentext.dropmerge.dsl.JenkinsJob j ->
-                getJenkinsJob(j).lastBuildResult == 'SUCCESS'
-            } ? 'Yes' : 'No'
-            CordysWiki.selectOption(item, option)
-        }
-
-        private static JenkinsJob getJenkinsJob(com.opentext.dropmerge.dsl.JenkinsJob job) {
-            Jenkins.getInstance(job.server.url).withJob(job.jobName, job.matrixAxes)
-        }
-
-        private static Closure getJenkinsUrl(JenkinsJob job, String build = null, String linkText = null) {
-            return {
-                a(href: job.getBuildUrl(build), linkText ?: job.toString())
-            }
-        }
-
-        private static Closure getJenkinsUrlWithStatus(JenkinsJob job, String build = null, String linkText = null) {
-            return {
-                span(class: "jenkinsJobStatus jenkinsJobStatus_${job.color}", getJenkinsUrl(job, build, linkText))
-            }
-        }
-
+    public static JenkinsJob getJenkinsJob(com.opentext.dropmerge.dsl.JenkinsJob job) {
+        Jenkins.getInstance(job.server.url).withJob(job.jobName, job.matrixAxes)
     }
 }

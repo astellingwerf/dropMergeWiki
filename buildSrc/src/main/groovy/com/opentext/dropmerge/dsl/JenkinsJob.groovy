@@ -6,6 +6,7 @@ class JenkinsJob {
     JenkinsServer server
     String description
     Map<String, String> matrixAxes
+    Set<JsonDataType> dataTypes = []
 
     JenkinsJob(String name) {
         this.name = name
@@ -18,6 +19,8 @@ class JenkinsJob {
     void description(String description) { this.description = description }
 
     void matrixValues(Map<String, String> matrixAxes) { this.matrixAxes = matrixAxes }
+
+    void addDataType(JsonDataType t) { dataTypes += t }
 
     @Override
     public String toString() {

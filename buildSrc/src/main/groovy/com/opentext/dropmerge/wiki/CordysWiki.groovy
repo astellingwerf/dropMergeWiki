@@ -2,6 +2,7 @@ package com.opentext.dropmerge.wiki
 
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
+import groovy.transform.Memoized
 import groovyx.net.http.HTTPBuilder
 import org.apache.http.cookie.Cookie
 import org.apache.http.impl.cookie.BasicClientCookie
@@ -47,6 +48,18 @@ class CordysWiki {
                     .collect { new FormField(it) }
                     .each(closure)
         }
+    }
+
+    @Memoized
+    public Map<String, FormField> getDropMergeFields(String pageID) {
+        def result = null
+        wikiHttp.get(path: '/pages/editscaffold.action', query: [pageId: pageID]) { resp, reader ->
+            result = getEditForm(reader).'**'
+                    .findAll { isFormField(it) }
+                    .collect { new FormField(it) }
+                    .collectEntries { [(it.name):it] }
+        }
+        return result
     }
 
     public void updateDropMergePage(String pageID, FieldDataTransformer transformers, boolean postToRealServer) {
