@@ -16,6 +16,7 @@ dropMerge {
 
     wiki {
         userName 'astellin@opentext.com'
+        promptForPassword()
         pageId 302127204
         updateProductionServer false
     }
