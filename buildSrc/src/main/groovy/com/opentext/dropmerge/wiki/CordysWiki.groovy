@@ -29,8 +29,9 @@ class CordysWiki {
                 contentType: URLENC,
                 body: [cams_cb_username: wikiUserName, cams_cb_password: wikiPassword, cams_security_domain: 'system', cams_login_config: 'http', cams_original_url: 'https://wiki.cordys.com/']) { resp, reader ->
             assert resp.statusLine.statusCode == 302
-            tokenKey = resp.headers.find { h -> return h.name.equals('Set-Cookie') && h.value.startsWith('CAMS_SID_OT_SYSTEM=') }.value
-            assert tokenKey != null
+            def header = resp.headers.find { h -> return h.name.equals('Set-Cookie') && h.value.startsWith('CAMS_SID_OT_SYSTEM=') }
+            if((tokenKey = header?.value) == null)
+                throw new IllegalArgumentException('The wiki username or password is incorrect')
         }
 
         String[] kvp = tokenKey.split('; ')[0].split('=')
