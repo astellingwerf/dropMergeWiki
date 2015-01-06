@@ -119,12 +119,14 @@ class UpdateWiki extends DefaultTask {
         if (!configuration.wiki.password) throw new IllegalArgumentException('wiki password not provided or empty')
         if (!configuration.wiki.pageId) throw new IllegalArgumentException('wiki page id not provided or empty')
 
-        println resultingData
         if (resultingData.isEmpty()) {
             didWork = false
             return
         }
 
+        resultingData.collectEntries { k, v -> [(k): v.substring(0, Math.min(v.length(), 100)) + (v.length() > 100 ? '...' : '')] }.each { k, v ->
+            logger.info "${k.padLeft(resultingData.keySet()*.length().max())}: $v"
+        }
         new CordysWiki().with {
             authenticate(configuration.wiki.userName, configuration.wiki.password)
             updateDropMergePage(configuration.wiki.pageId, resultingData, configuration.wiki.updateProductionServer)
