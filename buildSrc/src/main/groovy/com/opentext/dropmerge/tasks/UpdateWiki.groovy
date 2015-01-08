@@ -60,22 +60,17 @@ class UpdateWiki extends DefaultTask {
         // 14
         registerDependencyTaskForField('UpgradeTested', JenkinsJobStatus, { set { config.upgrade } })
 
-        // 17, and 18
-        registerDependencyTaskForField('MBViolationsHigh', MBVCount, { set High })
-        registerDependencyTaskForField('MBViolationsMedium', MBVCount, { set Normal })
+        // 17, 18, 20, and 21
+        [High: High, Medium: Normal].each { label, level ->
+            registerDependencyTaskForField('MBViolations' + label, MBVCount, { set level })
+            registerDependencyTaskForField('PMDViolations' + label, PMDCount, { set level })
+        }
 
         // 19
         registerDependencyTaskForField('CompilerWarningsBefore', CWCount)
-
-        // 20, and 21
-        registerDependencyTaskForField('PMDViolationsHigh', PMDCount, { set High })
-        registerDependencyTaskForField('PMDViolationsMedium', PMDCount, { set Normal })
     }
 
-    private Task registerDependencyTaskForField(String field,
-                                                Class<? extends Task> type,
-                                                Closure configure = null,
-                                                Closure action = null) {
+    Task registerDependencyTaskForField(String field, Class<? extends Task> type, Closure configure = null, Closure action = null) {
         def t = project.task("fillDropMergeField$field",
                 group: DROP_MERGE_GROUP,
                 type: type,
@@ -89,7 +84,7 @@ class UpdateWiki extends DefaultTask {
         return t
     }
 
-    private Task registerDependencyTaskForField(String field, Closure action) {
+    Task registerDependencyTaskForField(String field, Closure action) {
         registerDependencyTaskForField(field, SimpleField, {}, action)
     }
 
