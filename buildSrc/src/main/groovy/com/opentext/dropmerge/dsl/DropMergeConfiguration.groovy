@@ -9,6 +9,7 @@ class DropMergeConfiguration {
 
     Team team = new Team()
     Wiki wiki = new Wiki()
+    Crucible crucible = new Crucible()
 
     WipTrunkPair<JenkinsJob> pmd = new WipTrunkPair<JenkinsJob>()
     WipTrunkPair<JenkinsJob> mbv = new WipTrunkPair<JenkinsJob>()
@@ -30,6 +31,10 @@ class DropMergeConfiguration {
 
     def wiki(Closure closure) {
         wiki.with(closure)
+    }
+
+    def crucible(Closure closure) {
+        crucible.with(closure)
     }
 
     def jenkinsServers(Closure closure) {

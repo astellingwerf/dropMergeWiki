@@ -18,8 +18,8 @@ public class SimpleField extends DefaultTask {
         wiki.getDropMergeFields(config.wiki.pageId)[fieldName]
     }
 
-    void setResult(String value) {
-        results[fieldName] = value
+    void setResult(String fieldNameAppendix = '', String value) {
+        results[fieldName + fieldNameAppendix] = value
     }
 
     void setSelectedOption(String option) {

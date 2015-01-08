@@ -10,6 +10,8 @@ import org.gradle.api.Task
 import org.gradle.api.tasks.TaskAction
 
 import static com.opentext.dropmerge.DropMergeWikiPlugin.DROP_MERGE_GROUP
+import static com.opentext.dropmerge.crucible.Crucible.getCrucibleAuthToken
+import static com.opentext.dropmerge.crucible.Crucible.getOpenReviewCount
 import static com.opentext.dropmerge.jenkins.TestCount.Fail
 import static com.opentext.dropmerge.jenkins.TestCount.Pass
 import static com.opentext.dropmerge.jenkins.WarningLevel.High
@@ -32,6 +34,19 @@ class UpdateWiki extends DefaultTask {
 
         // 0
         registerDependencyTaskForField('TeamLink') { selectedOption = config.team.name }
+
+        // 1
+        registerDependencyTaskForField('ReviewsDone', SimpleFieldWithComment, null) {
+            if (!config.crucible.userName) throw new IllegalArgumentException('Crucible username not provided or empty')
+            if (!config.crucible.password) throw new IllegalArgumentException('Crucible password not provided or empty')
+            if (!config.crucible.projectKey) throw new IllegalArgumentException('Crucible project not provided or empty')
+
+            String crucibleAuthToken = getCrucibleAuthToken(config.crucible.userName, config.crucible.password)
+            int openReviewCount = getOpenReviewCount(config.crucible.projectKey, crucibleAuthToken)
+
+            selectedOption = openReviewCount == 0 ? 'Yes' : 'No'
+            comment = openReviewCount == 0 ? 'All reviews closed' : "$openReviewCount open review(s)"
+        }
 
         // 4
         registerDependencyTaskForField('IntegrationTestsPass') {
