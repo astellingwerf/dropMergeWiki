@@ -8,7 +8,7 @@ import static com.opentext.dropmerge.jenkins.Util.getJenkinsUrlWithStatus
 import static com.opentext.dropmerge.tasks.UpdateWiki.getJenkinsJob
 import static com.opentext.dropmerge.wiki.WikiTableBuilder.withHtml
 
-class JenkinsJobStatusComment extends SimpleField {
+class JenkinsJobStatus extends SimpleFieldWithComment {
     Closure<Collection<JenkinsJob>> selector
 
     void set(Closure<Collection<JenkinsJob>> s) {
@@ -17,7 +17,11 @@ class JenkinsJobStatusComment extends SimpleField {
 
     @TaskAction
     def createComment() {
-        result = withHtml { html ->
+        selectedOption = jobs.every {
+            getJenkinsJob(it).lastBuildResult == 'SUCCESS'
+        } ? 'Yes' : 'No'
+
+        comment = withHtml { html ->
             html.p {
                 jobs.each { JenkinsJob j ->
                     getJenkinsUrlWithStatus(getJenkinsJob(j), LAST_COMPLETED_BUILD, 'Job').with {

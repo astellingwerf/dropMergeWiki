@@ -49,62 +49,27 @@ class UpdateWiki extends DefaultTask {
         }
 
         // 4
-        registerDependencyTaskForField('IntegrationTestsPass') {
-            selectedOption = config.integrationTests.every {
-                getJenkinsJob(it).lastBuildResult == 'SUCCESS'
-            } ? 'Yes' : 'No'
-        }
-        registerDependencyTaskForField('IntegrationTestsPassComment',
-                JenkinsJobStatusComment,
-                { set({ config.integrationTests }) })
+        registerDependencyTaskForField('IntegrationTestsPass', JenkinsJobStatus, { set { config.integrationTests } })
 
         // 5, 6, and 7
-        registerDependencyTaskForField('SuccesfulTestsBefore', ComparableTestCount, { configure Pass, { it.left } })
-        registerDependencyTaskForField('SuccesfulTestsAfter', ComparableTestCount, { configure Pass, { it.right } })
-        registerDependencyTaskForField('FailedTestsBefore', ComparableTestCount, { configure Fail, { it.left } })
-        registerDependencyTaskForField('FailedTestsAfter', ComparableTestCount, { configure Fail, { it.right } })
+        registerDependencyTaskForField('SuccesfulTests', ComparableTestCount, { set Pass })
+        registerDependencyTaskForField('FailedTests', ComparableTestCount, { set Fail })
         registerDependencyTaskForField('SuccessfulRegressionTestsComment', SuccessfulRegressionTestsComment)
         registerDependencyTaskForField('TotalRegressionTestsComment', TotalRegressionTestsComment)
 
         // 14
-        registerDependencyTaskForField('UpgradeTested') {
-            selectedOption = config.upgrade.every {
-                getJenkinsJob(it).lastBuildResult == 'SUCCESS'
-            } ? 'Yes' : 'No'
-        }
-        registerDependencyTaskForField('UpgradeTestedComment',
-                JenkinsJobStatusComment,
-                { set({ config.upgrade }) })
+        registerDependencyTaskForField('UpgradeTested', JenkinsJobStatus, { set { config.upgrade } })
 
         // 17, and 18
-        registerDependencyTaskForField('MBViolationsHighBefore', MBVCount, { configure High, { it.trunk } })
-        registerDependencyTaskForField('MBViolationsHighAfter', MBVCount, { configure High, { it.wip } })
-        registerDependencyTaskForField('MBViolationsMediumBefore', MBVCount, { configure Normal, { it.trunk } })
-        registerDependencyTaskForField('MBViolationsMediumAfter', MBVCount, { configure Normal, { it.wip } })
+        registerDependencyTaskForField('MBViolationsHigh', MBVCount, { set High })
+        registerDependencyTaskForField('MBViolationsMedium', MBVCount, { set Normal })
 
         // 19
-        registerDependencyTaskForField('CompilerWarningsBefore') {
-            def j = config.compilerWarnings.trunk
-            if (!j) {
-                didWork = false
-                return
-            }
-            result = getJenkinsJob(j).compilerWarningFigure
-        }
-        registerDependencyTaskForField('CompilerWarningsAfter') {
-            def j = config.compilerWarnings.wip
-            if (!j) {
-                didWork = false
-                return
-            }
-            result = getJenkinsJob(j).compilerWarningFigure
-        }
+        registerDependencyTaskForField('CompilerWarningsBefore', CWCount)
 
         // 20, and 21
-        registerDependencyTaskForField('PMDViolationsHighBefore', PMDCount, { configure High, { it.trunk } })
-        registerDependencyTaskForField('PMDViolationsHighAfter', PMDCount, { configure High, { it.wip } })
-        registerDependencyTaskForField('PMDViolationsMediumBefore', PMDCount, { configure Normal, { it.trunk } })
-        registerDependencyTaskForField('PMDViolationsMediumAfter', PMDCount, { configure Normal, { it.wip } })
+        registerDependencyTaskForField('PMDViolationsHigh', PMDCount, { set High })
+        registerDependencyTaskForField('PMDViolationsMedium', PMDCount, { set Normal })
     }
 
     private Task registerDependencyTaskForField(String field,

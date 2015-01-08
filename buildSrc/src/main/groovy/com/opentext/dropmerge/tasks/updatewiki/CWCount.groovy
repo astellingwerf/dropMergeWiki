@@ -3,7 +3,7 @@ package com.opentext.dropmerge.tasks.updatewiki
 import com.opentext.dropmerge.dsl.JenkinsJob
 import com.opentext.dropmerge.dsl.WipTrunkPair
 
-class PMDCount extends LeveledQualityMetricCount {
+class CWCount extends QualityMetricCount {
     @Override
     protected WipTrunkPair<JenkinsJob> getMetricPair() {
         config.pmd
@@ -11,6 +11,6 @@ class PMDCount extends LeveledQualityMetricCount {
 
     @Override
     protected String getMetricFigure(com.opentext.dropmerge.jenkins.JenkinsJob job) {
-        job.getPMDFigure(level)
+        job.compilerWarningFigure
     }
 }

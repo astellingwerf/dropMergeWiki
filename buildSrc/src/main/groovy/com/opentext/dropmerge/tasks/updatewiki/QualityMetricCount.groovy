@@ -2,28 +2,26 @@ package com.opentext.dropmerge.tasks.updatewiki
 
 import com.opentext.dropmerge.dsl.JenkinsJob
 import com.opentext.dropmerge.dsl.WipTrunkPair
-import com.opentext.dropmerge.jenkins.WarningLevel
 import org.gradle.api.tasks.TaskAction
 
 import static com.opentext.dropmerge.tasks.UpdateWiki.getJenkinsJob
 
 abstract class QualityMetricCount extends SimpleField {
-    WarningLevel level
     Closure<JenkinsJob> projection
 
-    void configure(WarningLevel l, Closure p) {
-        level = l
+    void set(Closure p) {
         projection = p
     }
 
     @TaskAction
     public void calculateTestCount() {
-        def job = projection(metricPair)
-        if (!job) {
-            didWork = false
+        def labelToProjection = [Before: { it.trunk }, After: { it.wip }]
+        didWork = labelToProjection.values().every { projection -> projection(metricPair) != null }
+        if (!didWork)
             return
+        labelToProjection.each { appendix, projection ->
+            setResult appendix, getMetricFigure(getJenkinsJob(projection(metricPair)))
         }
-        result = getMetricFigure(getJenkinsJob(job))
     }
 
     protected abstract WipTrunkPair<JenkinsJob> getMetricPair()

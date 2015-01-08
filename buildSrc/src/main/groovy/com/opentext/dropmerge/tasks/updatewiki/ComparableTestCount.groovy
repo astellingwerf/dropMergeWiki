@@ -8,19 +8,19 @@ import static com.opentext.dropmerge.tasks.UpdateWiki.getJenkinsJob
 
 class ComparableTestCount extends SimpleField {
     TestCount testCount
-    Closure projection
 
-    void configure(TestCount tc, Closure p) {
+    void set(TestCount tc) {
         testCount = tc
-        projection = p
     }
 
     @TaskAction
     public void calculateTestCount() {
-        result = String.valueOf(config.regressionTests.sum { RegressionTest tests ->
-            tests.comparables.collectMany(projection).sum {
-                getJenkinsJob(it).getTestFigure(testCount) as int
-            }
-        })
+        [Before: { it.left }, After: { it.right }].each { appendix, projection ->
+            setResult appendix, String.valueOf(config.regressionTests.sum { RegressionTest tests ->
+                tests.comparables.collectMany(projection).sum {
+                    getJenkinsJob(it).getTestFigure(testCount) as int
+                }
+            })
+        }
     }
 }
