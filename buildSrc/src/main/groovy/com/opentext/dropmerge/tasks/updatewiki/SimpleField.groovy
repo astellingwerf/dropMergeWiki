@@ -22,6 +22,10 @@ public class SimpleField extends DefaultTask {
         results[fieldName + fieldNameAppendix] = value
     }
 
+    String getResult(String fieldNameAppendix = '') {
+        results[fieldName + fieldNameAppendix]
+    }
+
     void setSelectedOption(String option) {
         result = CordysWiki.selectOption(formField.rawItem, option)
     }
