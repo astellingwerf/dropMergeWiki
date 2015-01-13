@@ -67,7 +67,7 @@ class UpdateWiki extends DefaultTask {
         }
 
         // 19
-        registerDependencyTaskForField('CompilerWarningsBefore', CWCount)
+        registerDependencyTaskForField('CompilerWarnings', CWCount)
     }
 
     Task registerDependencyTaskForField(String field, Class<? extends Task> type, Closure configure = null, Closure action = null) {
