@@ -114,7 +114,7 @@ class UpdateWiki extends DefaultTask {
     }
 
     Task registerDependencyTaskForField(String field, Closure action) {
-        registerDependencyTaskForField(field, SimpleField, {}, action)
+        registerDependencyTaskForField(field, SimpleField, null, action)
     }
 
     Task registerQualityQuestion(String field) {
