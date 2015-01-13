@@ -98,6 +98,8 @@ class UpdateWiki extends DefaultTask {
          'UsabilityAcceptedByPM',
          'MultiplatformValidationDone',
          'ForwardPortingCompleted'].each this.&registerQualityQuestion
+
+        // TODO: Final verdict
     }
 
     Task registerDependencyTaskForField(String field, Class<? extends Task> type, Closure configure = null, Closure action = null) {
