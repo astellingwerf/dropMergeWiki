@@ -140,7 +140,7 @@ class UpdateWiki extends DefaultTask {
             return
         }
 
-        resultingData.collectEntries { k, v -> [(k): v.substring(0, Math.min(v.length(), 100)) + (v.length() > 100 ? '...' : '')] }.each { k, v ->
+        resultingData.collectEntries { k, v -> [(k): (!v ? 'null' : v.substring(0, Math.min(v.length(), 100)) + (v.length() > 100 ? '...' : ''))] }.each { k, v ->
             logger.info "${k.padLeft(resultingData.keySet()*.length().max())}: $v"
         }
         new CordysWiki().with {
