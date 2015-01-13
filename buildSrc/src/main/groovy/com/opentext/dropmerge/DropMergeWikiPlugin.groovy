@@ -23,8 +23,9 @@ class DropMergeWikiPlugin implements Plugin<Project> {
         def servers = project.container(JenkinsServer)
         def jobs = project.container(JenkinsJob)
         def regressionTests = project.container(RegressionTest)
+        def qualityQuestions = project.container(QualityAndProcessQuestion)
 
-        def configuration = new DropMergeConfiguration(servers, jobs, regressionTests)
+        def configuration = new DropMergeConfiguration(servers, jobs, regressionTests, qualityQuestions)
         project.convention.plugins.dropMerge = new DropMergeConfigurationConvention(configuration)
     }
 }

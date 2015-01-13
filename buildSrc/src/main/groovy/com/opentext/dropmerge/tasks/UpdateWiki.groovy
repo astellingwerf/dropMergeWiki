@@ -52,6 +52,10 @@ class UpdateWiki extends DefaultTask {
             }
         }
 
+        // 2 and 3
+        ['PerformanceDegradation',
+         'MemoryLeaksIntroduced'].each this.&registerQualityQuestion
+
         // 4
         registerDependencyTaskForField('IntegrationTestsPass', JenkinsJobStatus, { set { config.integrationTests } })
 
@@ -61,8 +65,20 @@ class UpdateWiki extends DefaultTask {
         registerDependencyTaskForField('SuccessfulRegressionTestsComment', SuccessfulRegressionTestsComment)
         registerDependencyTaskForField('TotalRegressionTestsComment', TotalRegressionTestsComment)
 
+        // 8 through 13
+        ['NewManualTestCases',
+         'RegressionTestsPassWithPayloadValidation',
+         'CompliantWithHorizontalComponentRequirements',
+         'DocumentationReviewed',
+         'TranslatableMessages',
+         'DocumentedAlerts'].each this.&registerQualityQuestion
+
         // 14
         registerDependencyTaskForField('UpgradeTested', JenkinsJobStatus, { set { config.upgrade } })
+
+        // 15, and 16
+        ['MigrationAspectsHandled',
+         'BackwardCompatibilityIssues'].each this.&registerQualityQuestion
 
         // 17, 18, 20, and 21
         [High: High, Medium: Normal].each { label, level ->
@@ -72,6 +88,15 @@ class UpdateWiki extends DefaultTask {
 
         // 19
         registerDependencyTaskForField('CompilerWarnings', CWCount)
+
+        // 22 through 28
+        ['SecurityIssuesIntroduced',
+         'BuildAndInstallerChangesAddressed',
+         'DefectFixesRetestedByOtherPerson',
+         'UserStoriesAcceptedByPM',
+         'UsabilityAcceptedByPM',
+         'MultiplatformValidationDone',
+         'ForwardPortingCompleted'].each this.&registerQualityQuestion
     }
 
     Task registerDependencyTaskForField(String field, Class<? extends Task> type, Closure configure = null, Closure action = null) {
@@ -90,6 +115,18 @@ class UpdateWiki extends DefaultTask {
 
     Task registerDependencyTaskForField(String field, Closure action) {
         registerDependencyTaskForField(field, SimpleField, {}, action)
+    }
+
+    Task registerQualityQuestion(String field) {
+        registerDependencyTaskForField(field, SimpleFieldWithComment, null, {
+            def input = config.qualityAndProcessQuestions.findByName(field)
+            if (!input) {
+                didWork = false
+                return
+            }
+            selectedOption = input.answer
+            comment = input.comment
+        })
     }
 
     @TaskAction

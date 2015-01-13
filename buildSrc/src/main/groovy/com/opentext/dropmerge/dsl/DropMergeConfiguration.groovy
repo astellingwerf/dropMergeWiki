@@ -6,6 +6,7 @@ class DropMergeConfiguration {
     NamedDomainObjectContainer<JenkinsServer> jenkinsServers
     NamedDomainObjectContainer<JenkinsJob> jenkinsJobs
     NamedDomainObjectContainer<RegressionTest> regressionTests
+    NamedDomainObjectContainer<QualityAndProcessQuestion> qualityAndProcessQuestions
 
     Team team = new Team()
     Wiki wiki = new Wiki()
@@ -19,10 +20,12 @@ class DropMergeConfiguration {
 
     DropMergeConfiguration(NamedDomainObjectContainer<JenkinsServer> jenkinsServers,
                            NamedDomainObjectContainer<JenkinsJob> jenkinsJobs,
-                           NamedDomainObjectContainer<RegressionTest> regressionTests) {
+                           NamedDomainObjectContainer<RegressionTest> regressionTests,
+                           NamedDomainObjectContainer<QualityAndProcessQuestion> qualityAndProcessQuestions) {
         this.jenkinsServers = jenkinsServers
         this.jenkinsJobs = jenkinsJobs
         this.regressionTests = regressionTests
+        this.qualityAndProcessQuestions = qualityAndProcessQuestions
     }
 
     def team(Closure closure) {
@@ -65,7 +68,6 @@ class DropMergeConfiguration {
         compilerWarnings.wip.addDataType JsonDataType.CompilerWarnings
     }
 
-
     def mbv(Closure closure) {
         mbv.with(closure)
         mbv.trunk.addDataType JsonDataType.MBV
@@ -86,6 +88,10 @@ class DropMergeConfiguration {
 
     def integrationTests(Collection<JenkinsJob> jobs) {
         this.integrationTests.addAll(jobs)
+    }
+
+    def qualityQuestions(Closure closure) {
+        qualityAndProcessQuestions.configure(closure)
     }
 
     @Override
