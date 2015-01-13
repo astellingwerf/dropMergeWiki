@@ -21,6 +21,7 @@ import static com.opentext.dropmerge.wiki.WikiTableBuilder.withHtml
 
 class UpdateWiki extends DefaultTask {
 
+    static final SUB_TASK_PREFIX = 'fillDropMergeField'
     static Task updateAllTask
     Map<String, String> resultingData = [:]
 
@@ -31,7 +32,7 @@ class UpdateWiki extends DefaultTask {
     public UpdateWiki() {
         super()
         if (!updateAllTask) {
-            updateAllTask = project.task('updateWiki-all').dependsOn this
+            updateAllTask = project.task('updateWiki-all', group: DROP_MERGE_GROUP, description:"Void task to invoke all '$SUB_TASK_PREFIX*' tasks.").dependsOn this
         }
 
         // 0
@@ -100,7 +101,7 @@ class UpdateWiki extends DefaultTask {
     }
 
     Task registerDependencyTaskForField(String field, Class<? extends Task> type, Closure configure = null, Closure action = null) {
-        def t = project.task("fillDropMergeField$field",
+        def t = project.task("$SUB_TASK_PREFIX$field",
                 group: DROP_MERGE_GROUP,
                 type: type,
                 description: "Calculate the data for the field \'$field\'.")

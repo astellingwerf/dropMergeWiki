@@ -15,8 +15,8 @@ class DropMergeWikiPlugin implements Plugin<Project> {
     }
 
     void applyTasks(project) {
-        project.task('printConfiguration', type: PrintConfiguration, group: DROP_MERGE_GROUP)
-        project.task('updateWiki', type: UpdateWiki, group: DROP_MERGE_GROUP)
+        project.task('printConfiguration', type: PrintConfiguration, group: DROP_MERGE_GROUP, description: 'Print the drop merge configuration.')
+        project.task('updateWiki', type: UpdateWiki, group: DROP_MERGE_GROUP, description: 'Persist the gathered data on the wiki page.')
     }
 
     void applyConventions(project) {
