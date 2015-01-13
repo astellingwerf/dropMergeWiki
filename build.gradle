@@ -52,12 +52,12 @@ dropMerge {
         wipFrtLinux {
             jobName 'pct-trunk-wip-frt-l-x64'
             server jenkinsServers.buildmasterNL
-            description 'Windows'
+            description 'Linux'
         }
         wipFrtLinuxJava8 {
             jobName 'pct-trunk-wip-frt-l-j8'
             server jenkinsServers.buildmasterNL
-            description 'Windows'
+            description 'Linux - Java 8'
         }
         wipFrtWindows {
             jobName 'pct-trunk-wip-frt-w-x64'
