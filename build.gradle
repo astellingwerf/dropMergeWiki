@@ -21,6 +21,11 @@ dropMerge {
         updateProductionServer false
     }
 
+    crucible {
+        userName 'astellingwerf'
+        project 'SEC'
+    }
+
     jenkinsServers {
         buildmasterNL { url 'http://buildmaster-nl.vanenburg.com/jenkins' }
         buildmasterHYD { url 'http://buildmaster-hyd.vanenburg.com/jenkins' }
