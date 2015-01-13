@@ -1,5 +1,6 @@
 package com.opentext.dropmerge.tasks
 
+import com.opentext.dropmerge.crucible.Crucible
 import com.opentext.dropmerge.dsl.DropMergeConfiguration
 import com.opentext.dropmerge.jenkins.Jenkins
 import com.opentext.dropmerge.jenkins.JenkinsJob
@@ -16,6 +17,7 @@ import static com.opentext.dropmerge.jenkins.TestCount.Fail
 import static com.opentext.dropmerge.jenkins.TestCount.Pass
 import static com.opentext.dropmerge.jenkins.WarningLevel.High
 import static com.opentext.dropmerge.jenkins.WarningLevel.Normal
+import static com.opentext.dropmerge.wiki.WikiTableBuilder.withHtml
 
 class UpdateWiki extends DefaultTask {
 
@@ -45,7 +47,9 @@ class UpdateWiki extends DefaultTask {
             int openReviewCount = getOpenReviewCount(config.crucible.projectKey, crucibleAuthToken)
 
             selectedOption = openReviewCount == 0 ? 'Yes' : 'No'
-            comment = openReviewCount == 0 ? 'All reviews closed' : "$openReviewCount open review(s)"
+            comment = withHtml { html ->
+                html.a(href: Crucible.getBrowseReviewsURL(config.crucible.projectKey), openReviewCount == 0 ? 'All reviews closed' : "$openReviewCount open review(s)")
+            }
         }
 
         // 4
