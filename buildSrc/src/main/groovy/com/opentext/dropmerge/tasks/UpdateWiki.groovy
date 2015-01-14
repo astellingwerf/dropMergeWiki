@@ -37,6 +37,9 @@ class UpdateWiki extends DefaultTask {
 
         // 0
         registerDependencyTaskForField('TeamLink') { selectedOption = config.team.name }
+        // TODO: drop merge date
+        // TODO: drop merge revision
+        // TODO: Functional description
 
         // 1
         registerDependencyTaskForField('ReviewsDone', SimpleFieldWithComment, null) {
