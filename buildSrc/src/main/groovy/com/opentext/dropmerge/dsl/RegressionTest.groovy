@@ -2,6 +2,8 @@ package com.opentext.dropmerge.dsl
 
 import org.apache.commons.lang3.tuple.Pair
 
+// TODO: Justifications
+// TODO: Exclusion rules
 class RegressionTest {
     String name
 
