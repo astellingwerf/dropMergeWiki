@@ -158,6 +158,12 @@ dropMerge {
     }
     upgrade jenkinsJobs.findAll { it.name.startsWith('upgrade') }
     integrationTests jenkinsJobs.eastwind
+
+    qualityQuestions {
+        forwardPortingCompleted { answer 'No'; comment 'We always first fix in our own WIP.' }
+        securityIssuesIntroduced { answer 'No'; comment 'Guarded by automated ACL tests and in code reviews.' }
+        newManualTestCases { answer 'No'; comment 'No new manual tests added. We prefer automated tests.' }
+    }
 }
 
 sourceCompatibility = 1.7
