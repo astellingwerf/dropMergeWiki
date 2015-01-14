@@ -161,8 +161,9 @@ dropMerge {
 
     qualityQuestions {
         forwardPortingCompleted { answer 'No'; comment 'We always first fix in our own WIP.' }
-        securityIssuesIntroduced { answer 'No'; comment 'Guarded by automated ACL tests and in code reviews.' }
         newManualTestCases { answer 'No'; comment 'No new manual tests added. We prefer automated tests.' }
+        regressionTestsPassWithPayloadValidation { answer 'Yes'; comment 'As part of the installation jobs, we set several properties to enable validations.' }
+        securityIssuesIntroduced { answer 'No'; comment 'Guarded by automated ACL tests and in code reviews.' }
     }
 }
 
