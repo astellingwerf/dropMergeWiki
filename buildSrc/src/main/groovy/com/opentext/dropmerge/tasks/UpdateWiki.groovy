@@ -26,7 +26,7 @@ class UpdateWiki extends DefaultTask {
     Map<String, String> resultingData = [:]
 
     DropMergeConfiguration getConfiguration() {
-        return project.convention.plugins.dropMerge.dropMerge
+        return project.extensions.dropMerge
     }
 
     public UpdateWiki() {

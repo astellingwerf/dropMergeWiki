@@ -9,7 +9,7 @@ public class SimpleField extends DefaultTask {
     Map<String, String> results
 
     DropMergeConfiguration getConfig() {
-        return project.convention.plugins.dropMerge.dropMerge
+        return project.extensions.dropMerge
     }
 
     def getFormField() {

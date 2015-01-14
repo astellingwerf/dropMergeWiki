@@ -7,6 +7,6 @@ class PrintConfiguration extends DefaultTask {
 
     @TaskAction
     public void printConfiguration() {
-        println project.convention.plugins.dropMerge
+        println project.extensions.dropMerge
     }
 }
