@@ -130,8 +130,8 @@ class UpdateWiki extends DefaultTask {
                 didWork = false
                 return
             }
-            selectedOption = input.answer
-            comment = input.comment
+            if(input.answer) selectedOption = input.answer
+            if(input.comment) comment = input.comment
         })
     }
 
