@@ -141,7 +141,7 @@ class UpdateWiki extends DefaultTask {
         if (!configuration.wiki.password) throw new IllegalArgumentException('wiki password not provided or empty')
         if (!configuration.wiki.pageId) throw new IllegalArgumentException('wiki page id not provided or empty')
 
-        if (resultingData.isEmpty()) {
+        if (anyDependsOnTasksDidWork && allDependsOnTasksWereOK) {
             didWork = false
             return
         }
@@ -153,6 +153,18 @@ class UpdateWiki extends DefaultTask {
             authenticate(configuration.wiki.userName, configuration.wiki.password)
             updateDropMergePage(configuration.wiki.pageId, resultingData, configuration.wiki.updateProductionServer)
         }
+    }
+
+    private boolean getAllDependsOnTasksWereOK() {
+        !allDependsOnTasks.any { Task t -> t.state.failure != null }
+    }
+
+    private boolean getAnyDependsOnTasksDidWork() {
+        allDependsOnTasks.any { Task t -> t.state.didWork }
+    }
+
+    private Collection<Task> getAllDependsOnTasks() {
+        updateAllTask.dependsOn.findAll { it instanceof Task }
     }
 
     public static JenkinsJob getJenkinsJob(com.opentext.dropmerge.dsl.JenkinsJob job) {
