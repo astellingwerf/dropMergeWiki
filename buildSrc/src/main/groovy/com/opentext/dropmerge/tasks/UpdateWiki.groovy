@@ -141,7 +141,7 @@ class UpdateWiki extends DefaultTask {
         if (!configuration.wiki.password) throw new IllegalArgumentException('wiki password not provided or empty')
         if (!configuration.wiki.pageId) throw new IllegalArgumentException('wiki page id not provided or empty')
 
-        if (anyDependsOnTasksDidWork && allDependsOnTasksWereOK) {
+        if (!anyDependsOnTasksDidWork || !allDependsOnTasksWereOK) {
             didWork = false
             return
         }
@@ -155,15 +155,15 @@ class UpdateWiki extends DefaultTask {
         }
     }
 
-    private boolean getAllDependsOnTasksWereOK() {
+    boolean getAllDependsOnTasksWereOK() {
         !allDependsOnTasks.any { Task t -> t.state.failure != null }
     }
 
-    private boolean getAnyDependsOnTasksDidWork() {
+    boolean getAnyDependsOnTasksDidWork() {
         allDependsOnTasks.any { Task t -> t.state.didWork }
     }
 
-    private Collection<Task> getAllDependsOnTasks() {
+    Collection<Task> getAllDependsOnTasks() {
         updateAllTask.dependsOn.findAll { it instanceof Task }
     }
 
